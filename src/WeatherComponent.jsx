@@ -21,12 +21,13 @@ const WeatherComponent = () => {
     };
 
     return (
-        <div style={{ marginBottom: '20px', background: '#f6fcfc', color: '#0a1c1e', padding: '20px', borderRadius: '8px' }}>
+        <div className="weather-card">
             <h2 style={{ marginBottom: '10px' }}>Aktuellt väder för {defaultCity}</h2>
             {weatherData && (
                 <div>
                     <p>Temperatur: {kelvinToCelsius(weatherData.main.temp)}°C</p>
                     <p>Luftfuktighet: {weatherData.main.humidity}%</p>
+                    <p>Beskrivning: {weatherData.weather[0].description}</p>
                 </div>
             )}
         </div>
