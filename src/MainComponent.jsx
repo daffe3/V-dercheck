@@ -1,21 +1,9 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import WeatherComponent from './WeatherComponent';
 import ForecastComponent from './ForecastComponent';
 import SearchComponent from './SearchComponent';
 import './index.css';
-
-const NavLink = ({ to, children }) => {
-    const location = useLocation();
-    const isActive = location.pathname === to;
-    return (
-        <li>
-            <Link to={to} className={isActive ? 'active' : ''}>
-                {children}
-            </Link>
-        </li>
-    );
-};
 
 const MainComponent = () => {
     const defaultCity = 'Gothenburg';
@@ -25,12 +13,15 @@ const MainComponent = () => {
             <div className="MainComponent">
                 <header>
                     <h1>Väderapplikation</h1>
-                    <p className="subtitle">Realtidsväder &amp; prognos</p>
                 </header>
                 <nav>
                     <ul>
-                        <NavLink to="/">Väder idag</NavLink>
-                        <NavLink to="/forecast">Prognos</NavLink>
+                        <li>
+                            <Link to="/">Väder idag</Link>
+                        </li>
+                        <li>
+                            <Link to="/forecast">Prognos</Link>
+                        </li>
                     </ul>
                 </nav>
                 <main>
@@ -41,11 +32,11 @@ const MainComponent = () => {
                     <SearchComponent />
                 </main>
                 <footer>
-                    <p>© 2024 Väderapplikation &nbsp;·&nbsp; Byggd med React + OpenWeatherMap</p>
+                    <p>&copy; 2024 Väderapplikation</p>
                 </footer>
             </div>
         </Router>
     );
-};
+}
 
 export default MainComponent;
