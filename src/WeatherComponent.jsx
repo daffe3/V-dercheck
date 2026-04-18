@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
-const getWeatherIcon = (description = '') => {
-    const d = description.toLowerCase();
-    if (d.includes('thunder')) return '⛈️';
-    if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
-    if (d.includes('snow')) return '❄️';
-    if (d.includes('fog') || d.includes('mist') || d.includes('haze')) return '🌫️';
-    if (d.includes('cloud')) return '☁️';
-    if (d.includes('clear')) return '✨';
-    return '🌤️';
-};
+const OWMIcon = ({ icon, size = 80 }) => (
+    <img
+        src={`https://openweathermap.org/img/wn/${icon}@2x.png`}
+        alt="väderikon"
+        width={size}
+        height={size}
+        style={{ filter: 'drop-shadow(0 0 12px rgba(56,189,248,0.4))' }}
+    />
+);
 
 const WeatherComponent = () => {
     const [weatherData, setWeatherData] = useState(null);
@@ -43,7 +42,7 @@ const WeatherComponent = () => {
             {!loading && weatherData && weatherData.main && (
                 <>
                     <div className="weather-icon">
-                        {getWeatherIcon(weatherData.weather?.[0]?.description)}
+                        <OWMIcon icon={weatherData.weather[0].icon} size={90} />
                     </div>
                     <div className="stat-row">
                         <div className="stat-box">
