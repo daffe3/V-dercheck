@@ -1,43 +1,55 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import WeatherComponent from './WeatherComponent';
 import ForecastComponent from './ForecastComponent';
 import SearchComponent from './SearchComponent';
 import './index.css';
 
+const NavLink = ({ to, children, onClick }) => {
+    const location = useLocation();
+    const isActive = location.pathname === to;
+    return (
+        <li>
+            <Link to={to} className={isActive ? 'active' : ''} onClick={onClick}>
+                {children}
+            </Link>
+        </li>
+    );
+};
+
 const MainComponent = () => {
     const defaultCity = 'Gothenburg';
-    const [showForecast, setShowForecast] = useState(false); 
+    const [showForecast, setShowForecast] = useState(false);
 
     return (
         <Router>
             <div className="MainComponent">
                 <header>
                     <h1>Väderapplikation</h1>
+                    <p className="subtitle">Realtidsväder &amp; prognos</p>
                 </header>
                 <nav>
                     <ul>
-                        <li>
-                            <Link to="/">Väder idag</Link>
-                        </li>
-                        <li>
-                            <Link to="/forecast" onClick={() => setShowForecast(true)}>Prognos</Link> {}
-                        </li>
+                        <NavLink to="/">Väder idag</NavLink>
+                        <NavLink to="/forecast" onClick={() => setShowForecast(true)}>Prognos</NavLink>
                     </ul>
                 </nav>
                 <main>
                     <Routes>
                         <Route path="/" element={<WeatherComponent />} />
-                        <Route path="/forecast" element={showForecast ? <ForecastComponent city={defaultCity} /> : null} /> {}
+                        <Route
+                            path="/forecast"
+                            element={showForecast ? <ForecastComponent city={defaultCity} /> : null}
+                        />
                     </Routes>
                     <SearchComponent />
                 </main>
                 <footer>
-                    <p>&copy; 2024 Väderapplikation</p>
+                    <p>© 2024 Väderapplikation &nbsp;·&nbsp; Byggd med React + OpenWeatherMap</p>
                 </footer>
             </div>
         </Router>
     );
-}
+};
 
 export default MainComponent;

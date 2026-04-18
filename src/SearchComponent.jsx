@@ -1,101 +1,124 @@
 import React, { useState } from 'react';
 
+const getWeatherIcon = (description = '') => {
+    const d = description.toLowerCase();
+    if (d.includes('thunder')) return '⛈️';
+    if (d.includes('rain') || d.includes('drizzle')) return '🌧️';
+    if (d.includes('snow')) return '❄️';
+    if (d.includes('fog') || d.includes('mist')) return '🌫️';
+    if (d.includes('cloud')) return '☁️';
+    if (d.includes('clear')) return '✨';
+    return '🌤️';
+};
+
 const SearchComponent = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [weatherData, setWeatherData] = useState(null);
     const [forecastData, setForecastData] = useState(null);
+    const [loading, setLoading] = useState(false);
     const apiKey = 'f1b102a258dcd4a05d17adaa4c4ee0d1';
 
     const handleSearch = () => {
-        // Fetch current weather
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchQuery}&appid=${apiKey}`)
-            .then(response => response.json())
-            .then(data => {
-                setWeatherData(data);
-            })
-            .catch(error => {
-                console.error('Error fetching current weather data:', error);
-                setWeatherData(null); // Clear previous data on error
-            });
+        if (!searchQuery.trim()) return;
+        setLoading(true);
+        setWeatherData(null);
+        setForecastData(null);
 
-        // Fetch forecast
-        fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${searchQuery}&appid=${apiKey}`)
-            .then(response => response.json())
-            .then(data => {
-                // OpenWeatherMap provides forecast data every 3 hours.
-                // Filter to get one entry per day (e.g., at noon or closest to it)
-                const dailyForecast = data.list.filter((item, index) => index % 8 === 0);
-                setForecastData(dailyForecast);
-            })
-            .catch(error => {
-                console.error('Error fetching forecast data:', error);
-                setForecastData(null); // Clear previous data on error
-            });
+        Promise.all([
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${searchQuery}&appid=${apiKey}`).then(r => r.json()),
+            fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${searchQuery}&appid=${apiKey}`).then(r => r.json()),
+        ]).then(([weather, forecast]) => {
+            setWeatherData(weather);
+            if (forecast.list) {
+                setForecastData(forecast.list.filter((_, i) => i % 8 === 0));
+            }
+            setLoading(false);
+        }).catch(() => setLoading(false));
     };
 
-    const kelvinToCelsius = (kelvin) => {
-        return (kelvin - 273.15).toFixed(1);
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') handleSearch();
     };
 
-    const formatDate = timestamp => {
-        const date = new Date(timestamp * 1000);
-        return date.toLocaleDateString('sv-SE');
-    };
+    const kelvinToCelsius = k => (k - 273.15).toFixed(1);
+    const formatDate = ts => new Date(ts * 1000).toLocaleDateString('sv-SE', { weekday: 'short', month: 'short', day: 'numeric' });
 
     return (
         <div className="weather-card">
-            <h2 style={{ marginBottom: '10px' }}>Sök väder</h2>
+            <h2>Sök väder</h2>
+
             <div className="search-container">
                 <input
                     type="text"
-                    placeholder="Ange plats"
+                    placeholder="Stad, land…"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                        padding: '10px',
-                        fontSize: '16px',
-                        width: '200px',
-                        borderRadius: '4px',
-                        border: '1px solid #ccc',
-                        marginBottom: '10px'
-                    }}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
                 />
-                <button
-                    onClick={handleSearch}
-                    style={{
-                        padding: '10px 20px',
-                        fontSize: '16px',
-                        borderRadius: '4px',
-                        backgroundColor: '#20d9e9',
-                        color: '#fff',
-                        border: 'none',
-                        cursor: 'pointer',
-                        marginRight: '10px'
-                    }}
-                >
+                <button className="search-btn" onClick={handleSearch}>
                     Sök
                 </button>
             </div>
 
-            {weatherData && weatherData.cod === 200 && (
-                <div>
-                    <h3>Aktuellt väder för {weatherData.name}</h3>
-                    <p>Temperatur: {kelvinToCelsius(weatherData.main.temp)}°C</p>
-                    <p>Luftfuktighet: {weatherData.main.humidity}%</p>
-                    <p>Beskrivning: {weatherData.weather[0].description}</p>
+            {loading && (
+                <div className="loading-dots">
+                    <span /><span /><span />
                 </div>
             )}
 
+            {weatherData && weatherData.cod === 200 && (
+                <>
+                    <div className="weather-icon">
+                        {getWeatherIcon(weatherData.weather?.[0]?.description)}
+                    </div>
+                    <h2 style={{ marginBottom: '1rem', fontSize: '1rem' }}>
+                        {weatherData.name}
+                        {weatherData.sys?.country && (
+                            <span className="city-badge">{weatherData.sys.country}</span>
+                        )}
+                    </h2>
+                    <div className="stat-row">
+                        <div className="stat-box">
+                            <div className="stat-label">Temp</div>
+                            <div className="stat-value">
+                                {kelvinToCelsius(weatherData.main.temp)}
+                                <span className="stat-unit">°C</span>
+                            </div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Känns som</div>
+                            <div className="stat-value">
+                                {kelvinToCelsius(weatherData.main.feels_like)}
+                                <span className="stat-unit">°C</span>
+                            </div>
+                        </div>
+                        <div className="stat-box">
+                            <div className="stat-label">Luftfukt</div>
+                            <div className="stat-value">
+                                {weatherData.main.humidity}
+                                <span className="stat-unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p className="weather-desc">{weatherData.weather?.[0]?.description}</p>
+                </>
+            )}
+
             {forecastData && forecastData.length > 0 && (
-                <div style={{ marginTop: '20px' }}>
-                    <h3>5-dagars prognos för {searchQuery}</h3>
+                <div style={{ marginTop: '1.5rem' }}>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                        5-dagars prognos
+                    </p>
                     <ul className="forecast-list">
-                        {forecastData.map((item, index) => (
-                            <li key={index} className="forecast-item">
-                                <p>Datum: {formatDate(item.dt)}</p>
-                                <p>Temperatur: {kelvinToCelsius(item.main.temp)}°C</p>
-                                <p>Luftfuktighet: {item.main.humidity}%</p>
-                                <p>Beskrivning: {item.weather[0].description}</p>
+                        {forecastData.map((item, i) => (
+                            <li key={i} className="forecast-item" style={{ animationDelay: `${i * 0.07}s` }}>
+                                <span className="forecast-date">{formatDate(item.dt)}</span>
+                                <span className="forecast-temp">{kelvinToCelsius(item.main.temp)}°C</span>
+                                <span className="forecast-humid">{item.main.humidity}% 💧</span>
+                                <span className="forecast-desc">
+                                    {getWeatherIcon(item.weather[0]?.description)}{' '}
+                                    {item.weather[0]?.description}
+                                </span>
                             </li>
                         ))}
                     </ul>
@@ -103,10 +126,10 @@ const SearchComponent = () => {
             )}
 
             {weatherData && weatherData.cod !== 200 && (
-                <p style={{ color: 'red' }}>Ort hittades inte. Vänligen försök igen.</p>
+                <p className="error-msg">Ort hittades inte. Kontrollera stavningen och försök igen.</p>
             )}
         </div>
     );
-}
+};
 
 export default SearchComponent;
