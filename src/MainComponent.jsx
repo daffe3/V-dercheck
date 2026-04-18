@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import WeatherComponent from './WeatherComponent';
 import ForecastComponent from './ForecastComponent';
 import SearchComponent from './SearchComponent';
 import './index.css';
 
-const NavLink = ({ to, children, onClick }) => {
+const NavLink = ({ to, children }) => {
     const location = useLocation();
     const isActive = location.pathname === to;
     return (
         <li>
-            <Link to={to} className={isActive ? 'active' : ''} onClick={onClick}>
+            <Link to={to} className={isActive ? 'active' : ''}>
                 {children}
             </Link>
         </li>
@@ -19,7 +19,6 @@ const NavLink = ({ to, children, onClick }) => {
 
 const MainComponent = () => {
     const defaultCity = 'Gothenburg';
-    const [showForecast, setShowForecast] = useState(false);
 
     return (
         <Router>
@@ -31,16 +30,13 @@ const MainComponent = () => {
                 <nav>
                     <ul>
                         <NavLink to="/">Väder idag</NavLink>
-                        <NavLink to="/forecast" onClick={() => setShowForecast(true)}>Prognos</NavLink>
+                        <NavLink to="/forecast">Prognos</NavLink>
                     </ul>
                 </nav>
                 <main>
                     <Routes>
                         <Route path="/" element={<WeatherComponent />} />
-                        <Route
-                            path="/forecast"
-                            element={showForecast ? <ForecastComponent city={defaultCity} /> : null}
-                        />
+                        <Route path="/forecast" element={<ForecastComponent city={defaultCity} />} />
                     </Routes>
                     <SearchComponent />
                 </main>
