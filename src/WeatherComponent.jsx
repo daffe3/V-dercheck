@@ -18,7 +18,7 @@ const WeatherComponent = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${defaultCity}&appid=${apiKey}`)
+        fetch(`https://api.openweathermap.org/data/2.5/weather?q=${defaultCity}&appid=${apiKey}&lang=sv`)
             .then(r => r.json())
             .then(data => { setWeatherData(data); setLoading(false); })
             .catch(() => setLoading(false));
